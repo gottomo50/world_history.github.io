@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+         <meta name="robots" content="noindex">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世界史一問一答</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .progress {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .question-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question-text {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .check-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .check-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .next-btn {
+            background: #48bb78;
+            color: white;
+            display: none;
+        }
+
+        .next-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .result.correct {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .result.incorrect {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .result.hidden {
+            display: none;
+        }
+
+        .correct-answer {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            border-left: 3px solid #667eea;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .score {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .score-text {
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .finish-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .finish-screen h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        .restart-btn {
+            background: #667eea;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .restart-btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 世界史一問一答</h1>
+        <div class="progress" id="progress">問題 1 / 10</div>
+
+        <div id="quiz-area">
+            <div class="question-card">
+                <div class="question-text" id="question"></div>
+                <input type="text" class="answer-input" id="answer" placeholder="答えを入力してください">
+            </div>
+
+            <div class="result" id="result"></div>
+
+            <div class="buttons">
+                <button class="check-btn" id="checkBtn">答え合わせ</button>
+                <button class="next-btn" id="nextBtn">次の問題</button>
+            </div>
+
+            <div class="score">
+                <div class="score-text">正解数: <span id="score">0</span> / <span id="total">0</span></div>
+            </div>
+        </div>
+
+        <div class="finish-screen" id="finishScreen">
+            <h2>🎉 お疲れ様でした！</h2>
+            <div class="score-text">最終スコア: <span id="finalScore"></span></div>
+            <button class="restart-btn" id="restartBtn">もう一度挑戦</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { 
+                q: "開戦当初中立を宣言していたイタリアは、1915年に協商国側で参戦した。それはイギリス・フランス・ロシアと何という条約を結んだ結果か？", 
+                a: "ロンドン秘密条約",
+                explanation: "第一次世界大戦でイタリアがイギリス・フランス・ロシアと結んだ条約"
+            },
+            { 
+                q: "イタリアはロンドン秘密条約を結んでの参戦によって、戦後における何の割譲を約束されたか？", 
+                a: "未回収のイタリア",
+                explanation: "イタリアが第一次対戦後、割譲を約束されたもの"
+            },
+            { 
+                q: "1915年、対オスマン帝国戦のための戦争協力を条件に、イギリスがアラブ人居住区の独占と独立をアラブ人移動者に約束した書簡は、何と通称されるか？", 
+                a: "フセイン・マクマホン協定",
+                explanation: "フセイン（フサイン）・マクマホン協定（書簡）"
+            },
+            { 
+                q: "1916年、イギリス・フランス・ロシアがオスマン帝国領の分割や、パレスチナの国際管理などを秘密裏に結んだ協定は何か？", 
+                a: "サイクス・ピコ協定",
+                explanation: "イギリス・フランス・ロシアが秘密裏に結んだ協定"
+            },
+            { 
+                q: "1917年、ユダヤ系金融資本の協力を得るため、イギリス外相がパレスチナにおけるユダヤ人の民族的郷土の設立を約束したものは、何と呼ばれるか？", 
+                a: "バルフォア宣言",
+                explanation: "イギリス外相がパレスチナにおけるユダヤ人の民族的郷土の設立を約束"
+            },
+            { 
+                q: "第一次世界大戦が長期化するなか、参戦国が全国民を動員して生産し、補給を整えていった体制を何と呼ぶか？", 
+                a: "総力戦",
+                explanation: "参戦国が全国民を動員して生産し、補給を整えた体制"
+            },
+            { 
+                q: "対戦中に多くの国で実施された、物資の供給・分割を政府が統制する仕組みは何か？", 
+                a: "配給制",
+                explanation: "物資の共有・分割を政府が統制する仕組み"
+            },
+            { 
+                q: "長引く戦争に勝利するため、1916年にイギリスで成立した内閣のように、諸政党が結束して政府を支持する体制を何と呼ぶか？", 
+                a: "挙国一致体制",
+                explanation: "諸政党が結束して政府を支持する体制"
+            },
+            { 
+                q: "オスマン帝国が同盟国側で参戦した結果、1914年にイギリスはエジプトの地位をどのように変化させたか？", 
+                a: "正式保護国化",
+                explanation: "イギリスが与えたエジプトの地位"
+            },
+            { 
+                q: "1915年5月に発症した、イギリス客船がドイツの潜水艦によって撃沈されて100人以上のアメリカ人乗客が犠牲になった事件は何か？", 
+                a: "ルシタニア号事件",
+                explanation: "イギリス客船がドイツの潜水艦に撃沈され、アメリカ人乗客が犠牲になった事件"
+            },
+            { 
+                q: "第一次世界大戦中の1916年に挙国一致内閣を作った、イギリスの自由党首相（政治家）は誰か？", 
+                a: "ロイド＝ジョージ",
+                explanation: "挙国一致内閣を作ったイギリス首相"
+            },
+                 { 
+                q: "ハノーヴァー朝は1901年に改称していたが、第一世界大戦中の17年、ドイツ風の名前を嫌って現在使われている王朝名に改称した。その名称は何か？", 
+                a: "ウィンザー朝",
+                explanation: "ハノーヴァー朝がドイツ風の名前をきらって改称"
+                 },
+                  { 
+                q: "第一次世界大戦中の1917年に挙国一致内閣を作ったフランスの首相は誰か？", 
+                a: "クレマンソー",
+                explanation: "挙国一致内閣を作ったフランス首相"
+            },
+            { 
+                q: "第一次世界大戦が始まった1914年に実質的に活動を停止し、1920年に事実上解散した国際的労働者組織は何か？", 
+                a: "第2インターナショナル",
+                explanation: "第一次世界大戦が始まり活動停止、1920年に解散"
+            },
+            { 
+                q: "第一次世界大戦中には滞在先のスイスで反戦・平和を訴えた、フランスの作家・思想家は誰か？", 
+                a: "ロマン＝ロラン",
+                explanation: "スイスで反戦・平和を訴えたフランス人作家・思想家"
+            },
+            { 
+                q: "1917年、ドイツが開始した通商破壊作戦を何と呼ぶか？", 
+                a: "無制限潜水艦作戦",
+                explanation: "ドイツが開始した通商破壊作戦"
+            },
+            { 
+                q: "ドイツによる無制限潜水艦作戦の開始を理由として第一次世界大戦に参戦した国はどこか？", 
+                a: "アメリカ合衆国",
+                explanation: "無制限潜水艦作戦を理由に第一次世界大戦に参戦"
+            },
+            { 
+                q: "1918年3月に調印され、ロシアが第一次世界大戦から離脱した、ドイツとの単独講和条約は何か？", 
+                a: "ブレスト＝リトフスク条約",
+                explanation: "ロシアが第一次大戦から離脱したドイツとの単独講和条約"
+            },
+            { 
+                q: "同盟国のうち、1918年9月に協商国に降伏した国はどこか？", 
+                a: "ブルガリア",
+                explanation: "1918年9月に協商国に降伏"
+            },
+            { 
+                q: "同盟国のうち、1918年10月に協商国に降伏した国はどこか？", 
+                a: "オスマン帝国",
+                explanation: "1918年10月に協商国に降伏"
+            },
+            { 
+                q: "1918年10月末、領内のハンガリー人やスラブ人の分離独立宣言が出され、11月に降伏した国はどこか？", 
+                a: "オーストリア",
+                explanation: "1918年10月末ハンガリー人、スラブ人がぬんり独立宣言、11月に降伏"
+            },
+            { 
+                q: "1918年11月、ドイツ帝国崩壊のきっかけとなる水兵の反乱が起きた。それはどこでおこったか？", 
+                a: "キール軍港",
+                explanation: "ドイツ帝国崩壊のきっかけとなった水兵の反乱が起きた場所"
+            },
+            { 
+                q: "1918年にドイツで、皇帝ヴィルヘルム2世を退位させて帝政を打倒し、ドイツ社会民主党を中心とする臨時政府による共和政が誕生した出来事を何と呼ぶか？", 
+                a: "ドイツ革命",
+                explanation: "帝政を打倒、ドイツ社会民主党を中心とする共和政が誕生"
+            },
+                 {
+                    q: "ドイツ革命の際、労働者と兵士が組織した評議会は、ドイツ語で何と呼ばれるか？", 
+                a: "レーテ",
+                explanation: "ドイツ革命の際、労働者と兵士が組織した評議会"
+            },
+                 { 
+                q: "1918〜1922年に『西洋の没落』を著し、大きな反響を呼んだドイツの歴史哲学者は誰か？", 
+                a: "シュペングラー",
+                explanation: "『西洋の没落』の著者、ドイツの歴史哲学者"
+            },
+                 { 
+                q: "女性参政権運動や第一次世界大戦での女性の貢献を背景に、アメリカ、イギリスなどで実現した権利は何か？", 
+                a: "女性参政権",
+                explanation: "アメリカ、イギリスなどで実現した権利"   
+            },
+                 {
+                    q: "1918年にアメリカから世界中に広まったインフルエンザの、ある国での流行が大きく報道されたことに由来する呼称は何か？", 
+                a: "スペイン風邪",
+                explanation: "スペインでの流行が大きく報道されたことに由来するインフルエンザの呼称"
+            },
+                 {
+                          q: "1917年3月、市民や労働者が参加したペトログラード蜂起により、皇帝が退位してロマノフ朝が崩壊した。この革命をロシア暦では何と称するか？", 
+                a: "二月革命",
+                explanation: "ペトログラード蜂起によってロマノフ朝の崩壊した革命"
+            },
+                 {
+                          q: "二月革命で退位した皇帝は誰か？", 
+                a: "ニコライ2世",
+                explanation: "二月革命で退位したロマノフ朝の皇帝"
+            },
+                 { 
+                q: "蜂起の際に労働者や兵士が組織し、その後の革命の中心となったものは何か？", 
+                a: "ソヴィエト",
+                explanation: "ソヴィエト（評議会）"
+            },
+                 { 
+                q: "二月革命の後に成立した臨時政府の中心となった政党は何か？", 
+                a: "立憲民主党",
+                explanation: "二月革命の後、臨時政府の中心となった政党"
+            },
+                 { 
+                q: "ロシアの二月革命後、亡命先のスイスから帰国したボリシェヴィキの指導者は誰か？", 
+                a: "レーニン",
+                explanation: "二月革命後のボリシェヴィキの指導者"
+            },
+                 { 
+                q: "「全ての権力をソヴィエトへ」をスローガンとして、レーニンが発表した基本方針は何と呼ばれるか？", 
+                a: "四月テーゼ",
+                explanation: "レーニンが発表した基本方針、「全ての権力をソヴィエトへ」"
+            },
+                 { 
+                q: "臨時政府に加わった唯一の社会主義者で、7月の改組で首相となった社会革命党右派の指導者は誰か？", 
+                a: "ケレンスキー",
+                explanation: "臨時政府に加わり、7月改組で首相となった"
+            },
+                 { 
+                q: "二月革命後、社会革命党とともにソヴィエト内の多数派を形成したが、その後の革命前後に影響力を失った勢力は何か？", 
+                a: "メンシェヴィキ",
+                explanation: "二月革命後多数派を形成したが、その後の革命で影響力を失った"
+            },
+                 { 
+                q: "二月革命後の、ソヴィエトと臨時政府が政治権力として併存していた状況を何と呼ぶか？", 
+                a: "二重権力",
+                explanation: "ソヴィエトと臨時政府が併存"
+            },
+                 { 
+                q: "1917年11月、ボリシェヴィキ派の労働者や兵士の武装蜂起で、社会主義政権を樹立した革命をロシア暦では何と称するか？", 
+                a: "十月革命",
+                explanation: "社会主義政権を樹立した革命"
+            },
+            { 
+                q: "二月革命後にメンシェヴィキからボリシェヴィキに移って十月革命を指導し、その後外務人民委員になった人物は誰か？", 
+                a: "トロツキー",
+                explanation: "メンシェヴィキからボリシェヴィキに移り十月革命を指導"
+                },
+                 { 
+                q: "1917年11月、成立したロシアの新政権は何を出して、全交戦国に講和を呼びかけたか？", 
+                a: "「平和に関する布告」",
+                explanation: "ロシア新政権の全交戦国への講和の呼びかけ"
+            },
+                 { 
+                q: "1917年11月、ロシアの新政府が「平和に関する布告」で示した原則的考えは何か？", 
+                a: "無併合・無償禁・民族自決",
+                explanation: "「平和に関する布告」で示した原則的考え"
+            },
+                 { 
+                q: "ロシアの新政権が「平和に関する布告」と同時に採択した土地の私的所有廃止を内容とする布告は何か？", 
+                a: "「土地に関する布告」",
+                explanation: "土地の私的所有廃止を内容とする"
+                                },
+                 { 
+                q: "1917年11月の普通選挙で社会革命党が約６割の議席を占め、18年1月に開催された会議は何か？", 
+                a: "憲法制定会議",
+                explanation: "社会革命党が半数以上の議席を占め1918年1月に開催された会議"
+                                },
+                 { 
+                q: "憲法制定会議初日の冒頭でソヴィエト提出の宣言が否決されたため、翌日レーニンが武力で会議を解散させた。これによって実現された支配形態を何と呼ぶか？", 
+                a: "ボリシェヴィキの一党支配",
+                explanation: "レーニンが武力で会議を解散させ、それによって実現された支配形態"
+                                },
+                 { 
+                q: "1918年3月の政権掌握後、党大会でボリシェヴィキから改称し、一党独裁体制を確立した政党は何か？", 
+                a: "ロシア共産党",
+                explanation: "ボリシェヴィキから改称し、一党独裁体制を確立した"
+            },
+                 { 
+                q: "1918年3月、ソヴィエト政権はどこへ遷都したか？", 
+                a: "モスクワ",
+                explanation: "1918年3月遷都"
+                                },
+                 { 
+                q: "革命後、サボタージュや反革命の動きに対処するためにつくられた全ロシア非常委員会の略称は何か？", 
+                a: "チェカ",
+                explanation: "全ロシア非常委員会の略称"
+                                },
+                 { 
+                q: "反革命軍（白軍）や外国干渉軍とたたかった、労働者や兵士からなるソヴィエト政権の軍隊は何か？", 
+                a: "赤軍",
+                explanation: "ソヴィエト政権の軍隊"
+                                },
+                 { 
+                q: "外国軍による対ソ干渉戦争のうち、チェコ兵救出を名目に日本軍が主力でおこなったものを何と呼ぶか？", 
+                a: "シベリア出兵",
+                explanation: "チェコ兵救出を名目に日本軍が主力でおこなった"
+                                },
+                 { 
+                q: "1918〜1921年、内戦と干渉戦争に対処するため、ソヴィエト政権がとった極端な統制経済政策を何と呼ぶか？", 
+                a: "戦時共産主義",
+                explanation: "ソヴィエト政権がとった極端な統制経済政策"
+                                },
+                 { 
+                q: "1919年にモスクワで結成され、別名、第３インターナショナルとも呼ばれた組織は何か？", 
+                a: "コミンテルン",
+                explanation: "コミンテルン（共産主義インターナショナル）"
+                                },
+                 { 
+                q: "ロシアで1921年に採用された、資本主義経済の一部復活を認めた新経済政策の略称は何か？", 
+                a: "ネップ",
+                explanation: "ネップ（NEP）"
+            }
+                 
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        const questionEl = document.getElementById('question');
+        const answerEl = document.getElementById('answer');
+        const resultEl = document.getElementById('result');
+        const checkBtn = document.getElementById('checkBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const scoreEl = document.getElementById('score');
+        const totalEl = document.getElementById('total');
+        const progressEl = document.getElementById('progress');
+        const quizArea = document.getElementById('quiz-area');
+        const finishScreen = document.getElementById('finishScreen');
+        const finalScoreEl = document.getElementById('finalScore');
+        const restartBtn = document.getElementById('restartBtn');
+
+        function loadQuestion() {
+            questionEl.textContent = questions[currentQuestion].q;
+            answerEl.value = '';
+            resultEl.classList.add('hidden');
+            resultEl.classList.remove('correct', 'incorrect');
+            checkBtn.style.display = 'block';
+            nextBtn.style.display = 'none';
+            answered = false;
+            progressEl.textContent = `問題 ${currentQuestion + 1} / ${questions.length}`;
+            totalEl.textContent = currentQuestion;
+            answerEl.focus();
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            
+            const userAnswer = answerEl.value.trim();
+            const correctAnswer = questions[currentQuestion].a;
+
+            answered = true;
+
+            resultEl.classList.remove('hidden');
+
+            if (userAnswer === correctAnswer) {
+                resultEl.innerHTML = '🎉 正解です！';
+                resultEl.classList.remove('incorrect');
+                resultEl.classList.add('correct');
+                score++;
+                scoreEl.textContent = score;
+            } else {
+                resultEl.innerHTML = `
+                    ❌ 不正解です
+                    <div class="correct-answer">正解: ${correctAnswer}</div>
+                    <div class="explanation">
+                        <div class="explanation-title">📖 解説</div>
+                        ${questions[currentQuestion].explanation}
+                    </div>
+                `;
+                resultEl.classList.remove('correct');
+                resultEl.classList.add('incorrect');
+            }
+
+            totalEl.textContent = currentQuestion + 1;
+            checkBtn.style.display = 'none';
+            nextBtn.style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showFinishScreen();
+            }
+        }
+
+        function showFinishScreen() {
+            quizArea.style.display = 'none';
+            finishScreen.style.display = 'block';
+            finalScoreEl.textContent = `${score} / ${questions.length}`;
+        }
+
+        function restart() {
+            currentQuestion = 0;
+            score = 0;
+            scoreEl.textContent = 0;
+            quizArea.style.display = 'block';
+            finishScreen.style.display = 'none';
+            loadQuestion();
+        }
+
+        checkBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', restart);
+
+        answerEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (!answered) {
+                    checkAnswer();
+                } else {
+                    nextQuestion();
+                }
+            }
+        });
+
+        loadQuestion();
+    </script>
+</body>
+</html>
