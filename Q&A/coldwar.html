@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+         <meta name="robots" content="noindex">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世界史一問一答</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .progress {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .question-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question-text {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .check-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .check-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .next-btn {
+            background: #48bb78;
+            color: white;
+            display: none;
+        }
+
+        .next-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .result.correct {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .result.incorrect {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .result.hidden {
+            display: none;
+        }
+
+        .correct-answer {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            border-left: 3px solid #667eea;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .score {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .score-text {
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .finish-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .finish-screen h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        .restart-btn {
+            background: #667eea;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .restart-btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 世界史一問一答</h1>
+        <div class="progress" id="progress">問題 1 / 10</div>
+
+        <div id="quiz-area">
+            <div class="question-card">
+                <div class="question-text" id="question"></div>
+                <input type="text" class="answer-input" id="answer" placeholder="答えを入力してください">
+            </div>
+
+            <div class="result" id="result"></div>
+
+            <div class="buttons">
+                <button class="check-btn" id="checkBtn">答え合わせ</button>
+                <button class="next-btn" id="nextBtn">次の問題</button>
+            </div>
+
+            <div class="score">
+                <div class="score-text">正解数: <span id="score">0</span> / <span id="total">0</span></div>
+            </div>
+        </div>
+
+        <div class="finish-screen" id="finishScreen">
+            <h2>🎉 お疲れ様でした！</h2>
+            <div class="score-text">最終スコア: <span id="finalScore"></span></div>
+            <button class="restart-btn" id="restartBtn">もう一度挑戦</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { 
+                q: "1948年の第9回パン＝アメリカ会議で成立したリオ協定などに基づく南北アメリカ大陸の地域協力組織は何か？", 
+                a: "米州機構",
+                explanation: "米州機構（OAS）、OAS：Organization of American States"
+            },
+            { 
+                q: "1951年に結ばれた、オーストラリア・ニュージランド・アメリカによる集団防衛条約は何か？", 
+                a: "太平洋安全保障条約",
+                explanation: "太平洋安全保障条約（ANZUS）、ANZUS：Australia, New Zealand, United States Security Treaty"
+            },
+            { 
+                q: "1954年に結ばれたSEATOの略称を持つ、８カ国による反共軍事同盟は何か？", 
+                a: "東南アジア条約機構",
+                explanation: "1954年に結ばれた８カ国による反共軍事同盟、SEATO：Southeast Asia Treaty Organization"
+            },
+            { 
+                q: "1955年に結成された、中東条約機構（METO）とも呼ばれる反共軍事同盟は何か？", 
+                a: "バグダード条約機構",
+                explanation: "METO：Middle East Treaty Organization"
+            },
+            { 
+                q: "アラブ民族主義が高まるなか、1958年カセムらによる王政打倒の革命が起こった西アジアの国はどこか？", 
+                a: "イラク",
+                explanation: "1958年王政打倒の革命がおきた西アジアの国"
+            },
+                        { 
+                q: "1958年の革命でイラク脱退した後、1959年にバグダード条約機構は、何という名称で再編成されたか？", 
+                a: "中央条約機構",
+                explanation: "中央条約機構（CENTO）、CENTO：Central Treaty Organization"
+            },
+            { 
+                q: "アメリカが1950年代に結んだ、２国間の反共安全保障条約の相手国として適当なものは次のどれか？ A.インド　B.フィリピン　C.ベトナム", 
+                a: "B.フィリピン",
+                explanation: "米比相互防衛条約（1951）"
+            },
+            { 
+                q: "1952年、日本と台湾の蒋介石政権との間で結ばれた条約は何か？", 
+                a: "日華平和条約",
+                explanation: "1952年、台湾の蒋介石政権との間で結ばれた"
+            },
+            { 
+                q: "朝鮮戦争の休戦直後、アメリカと大韓民国が結んだ反共安全保障条約は何か？", 
+                a: "米韓相互防衛条約",
+                explanation: "朝鮮戦争休戦直後、アメリカと大韓民国が結んだ条約"
+            },
+            { 
+                q: "1954年、アメリカと台湾の蒋介石政権が結んだ反共安全保障条約は何か？", 
+                a: "米華相互防衛条約",
+                explanation: "1954年、アメリカと台湾の蒋介石政権が結んだ条約"
+            },
+            { 
+                q: "1949年、アメリカに次いで２番目に核実験に成功した国はどこか？", 
+                a: "ソ連",
+                explanation: "1949年、アメリカに次いで核実験に成功した国"
+            },
+            { 
+                q: "1952年、３番目に核実験に成功した国はどこか？", 
+                a: "イギリス",
+                explanation: "核実験に成功した３番目の国"
+            },
+                 { 
+                q: "アメリカが1952年に実験に成功した、原子爆弾よりも強力な破壊力を持つ兵器は何か？", 
+                a: "水素爆弾",
+                explanation: "原子爆弾よりも破壊力が強い兵器、アメリカが実験成功"
+                 },
+                  { 
+                q: "1960年、４番目に核実験に成功した国はどこか？", 
+                a: "フランス",
+                explanation: "４番目の核実験成功国"
+            },
+            { 
+                q: "1964年、５番目に核実験に成功した国はどこか？", 
+                a: "中国",
+                explanation: "５番目の核実験成功国"
+            },
+            { 
+                q: "アメリカが、1946年以降は原子爆弾、54年以降は水素爆弾の実験を行った、中部太平洋の環礁はどこか？", 
+                a: "ビキニ環礁",
+                explanation: "アメリカが原子爆弾、水素爆弾の実験を行った中部太平洋の環礁"
+            },
+            { 
+                q: "1954年、ビキニ環礁での水素実験による「死の灰」を日本の漁船があびた事件は何か？", 
+                a: "第五福竜丸事件",
+                explanation: "ビキニ環礁での水素実験による「死の灰」を日本の漁船があびた事件"
+            },
+            { 
+                q: "1955年にイギリスの哲学者とアメリカ在住の物理学者らが出した、核兵器と核戦争の危険性を訴えた宣言は何か？", 
+                a: "ラッセル・アインシュタイン宣言",
+                explanation: "核兵器と核戦争の危険性を訴えた宣言"
+            },
+            { 
+                q: "ラッセル・アインシュタイン宣言に基づいて1957年にカナダで開かれ、その後科学者による核兵器禁止運動の組織名となった会議の名称は何か？", 
+                a: "パグウォッシュ会議",
+                explanation: "科学者による核兵器禁止運動の組織名となった会議"
+            },
+            { 
+                q: "1947年にアメリカで創設された諜報機関名は何か？", 
+                a: "中央情報局",
+                explanation: "中央情報局（CIA）、CIA：Central Intelligence Agency"
+            },
+            { 
+                q: "1950〜54年、ある上院議員が先頭に立って「赤狩り」の名目で行われた反共活動を何と呼ぶか？", 
+                a: "マッカーシズム",
+                explanation: "1950〜54年、「赤狩り」の名目で行われた反共活動"
+            },
+            { 
+                q: "朝鮮戦争の解決を公約して選挙に当選した、共和党出身の大統領は誰か？", 
+                a: "アイゼンハワー",
+                explanation: "朝鮮戦争解決を公約、共和党出身の大統領"
+            },
+            { 
+                q: "第二次世界大戦後に開発が進んだ、原子炉で発生する熱エネルギーを利用した発電方法は何か？", 
+                a: "原子力発電",
+                explanation: "原子炉で発生する熱エネルギーを利用した発電方法"
+            },
+            { 
+                q: "1957年に発足した、原子力の平和利用を目指す国際機関は何か？", 
+                a: "国際原子力機関",
+                explanation: "国際原子力機関（IAEA）、IAEA：International Atomic Energy Agency"
+            },
+                 {
+                    q: "アイゼンハワーは離任の際、軍と軍需産業の相互依存によって軍備拡大に向かう構造を、何という言葉で警告したか？", 
+                a: "「軍産複合体」",
+                explanation: "アイゼンハワーの警告、軍と軍需産業の相互依存によって糞美拡大に向かう構造"
+            },
+                 { 
+                q: "1950年、フランス外相が提唱した、西欧諸国の地域統合を目標とする経済協力機構の創設案は何と呼ばれるか？", 
+                a: "シューマン・プラン",
+                explanation: "フランス外相が提案、西欧諸国の地域統合を目標とする経済協力機構の創設案"
+            },
+                 { 
+                q: "1952年、フランス・イタリア・西ドイツ・ベネルクス3国が発足させた、略称ECSCと呼ばれるものは何か？", 
+                a: "ヨーロッパ石炭鉄鋼共同体",
+                explanation: "ECSC:European Coal and Steel Community"   
+            },
+                 {
+                    q: "フランス・西ドイツ・イタリア・ベネルクス3国が1957年に調印した条約は何か？", 
+                a: "ローマ条約",
+                explanation: "フランス・西ドイツ・イタリア・ベネルクス３国が調印した条約"
+            },
+                 {
+                          q: "ローマ条約により1958年に発足し、略称EECと呼ばれる組織は何か？", 
+                a: "ヨーロッパ経済共同体",
+                explanation: "EEC：European Economic Community"
+            },
+                 {
+                          q: "ローマ条約により1958年に発足し、略称EURATOM（ユートラム）と呼ばれる組織は何か？", 
+                a: "ヨーロッパ原子力共同体",
+                explanation: "EURATOM：European Atomic Energy Community"
+            },
+                 { 
+                q: "EECに対抗して、1960年にイギリスなど７カ国が発足させた、略称EFTAと呼ばれる組織は何か？", 
+                a: "ヨーロッパ自由貿易連合",
+                explanation: "EFTA：European Free Trade Association"
+            },
+                 { 
+                q: "1967年、ECSC・EEC・EURATOMが広い分野での統合を目指して発足させた、略称ECと呼ばれる組織は何か", 
+                a: "ヨーロッパ共同体",
+                explanation: "EC：European Communities"
+            },
+                 { 
+                q: "1973年、イギリス・デンマーク・アイルランドが加わって成立したECを何と呼ぶか？", 
+                a: "拡大EC",
+                explanation: "イギリス・デンマーク・アイルランドが加わって成立したEC"
+            },
+                 { 
+                q: "1958年、大統領の権限を著しく強化した新憲法の制定に伴い発足したフランスの新政体は何か？", 
+                a: "第五共和政",
+                explanation: "大統領の権限を著しく強化した新憲法の制定に伴い発足したフランスの新政体"
+            },
+                 { 
+                q: "第五共和政のもとで最初の大統領に就いたのは誰か？", 
+                a: "ド・ゴール",
+                explanation: "第五共和政、最初の大統領"
+            },
+                 { 
+                q: "1962年、ド・ゴールがエヴィアン協定で独立を認めた国はどこか？", 
+                a: "アルジェリア",
+                explanation: "ド・ゴールが独立を認めた国"
+            },
+                 { 
+                q: "1964年、独自外交を進めるド・ゴールはどこの国と国交を樹立したか？", 
+                a: "中国",
+                explanation: "ド・ゴールの独自外交で国交を樹立した国"
+            },
+                 { 
+                q: "1966年、独自外交を進めるフランスが脱退した機構は何か？", 
+                a: "NATOの軍事機構",
+            explanation: "1966年、フランスが脱退した機構"
+            },
+                             { 
+                q: "1969年のド・ゴール退陣の要因となった、68年の大規模な反ド・ゴール体制運動は何と呼ばれるか？", 
+                a: "五月危機",
+                explanation: "五月危機（五月革命）"
+            },
+                                 { 
+                q: "朝鮮戦争時の日本において経済復興のきっかけとなった、アメリカ軍の戦時需要は何と呼ばれるか？", 
+                a: "朝鮮戦争特需",
+                explanation: "朝鮮戦争時、日本の経済復興のきっかけとなったアメリカ軍の戦時需要"
+            },
+                             { 
+                q: "分裂していた社会党が統一され、自由党と民主党が自由民主党を結成したことで出現した日本の政治体制は何か？", 
+                a: "55年体制",
+                explanation: "社会党が統一され、自由党と民主党が自由民主党を結成したことで出現した日本の政治体制"
+            },
+                             { 
+                q: "1956年に調印され、北方領土問題の解決を棚上げにしつつも日本とソ連の国交を回復させた宣言は何あか？", 
+                a: "日ソ共同宣言",
+                explanation: "日本とソ連の国交を回復させた宣言"
+            },
+                             { 
+                q: "日ソ共同宣言によって、1956年12月に日本は何という国際機関への加盟が実現したか？", 
+                a: "国際連合",
+                explanation: "日ソ共同宣言によって日本の加盟が実現した国際機関"
+            },
+                             { 
+                q: "1960年、条約批准を強行したため激しい反対闘争が起こり、岸信介内閣辞職につながった出来事は何か？", 
+                a: "日米安全保障条約改定",
+                explanation: "条約批准を強行したため反対闘争が起こり、岸内閣辞職につながった"
+            },
+                             { 
+                q: "1960年に、「所得倍増計画」を提示した、日本の首相は誰か？", 
+                a: "池田勇人",
+                explanation: "「所得倍増計画」首相：池田勇人（いけだ　はやと）"
+            },
+                             { 
+                q: "1960年代の日本の急速な経済成長を何と呼ぶか？", 
+                a: "高度経済成長",
+                explanation: "日本の急速な経済成長"
+            },
+                             { 
+                q: "1965年に調印された、日本と韓国の国交正常化のための条約は何か？", 
+                a: "日韓基本条約",
+                explanation: "1965年調印、日本と韓国の国交正常化のための条約"
+            },
+                             { 
+                q: "1953年、スターリンの死後、ソ連共産党第一書記となった人物は誰か？", 
+                a: "フルシチョフ",
+                explanation: "スターリン死後、ソ連共産党第一書記"
+            },
+                             { 
+                q: "1956年のソ連共産党第20回大会で、フルシチョフがおこなった秘密報告を何と呼ぶか？", 
+                a: "スターリン批判",
+                explanation: "ソ連共産党第20回第会でフルシチョフがおこなった秘密報告"
+            },
+                             { 
+                q: "ソ連共産党第20回大会で打ち出された、社会主義国と資本主義国都が共存できるとする考え方を何と呼ぶか？", 
+                a: "平和共存政策",
+                explanation: "ソ連共産党第20回大会で打ち出された考え方"
+            },
+                             { 
+                q: "ソ連共産党第20回大会の後、1956年4月に何が解散されたか？", 
+                a: "コミンフォルム",
+                explanation: "コミンフォルム（共産党情報局）"
+            },
+                             { 
+                q: "スターリン死後のソ連社会の解放感を、エレンブルクの小説にちなんで表現した言葉は何か？", 
+                a: "「雪どけ」",
+                explanation: "スターリン死後の解放感を表現した言葉"
+            },
+                             { 
+                q: "「雪どけ」の言葉が国際関係面で用いられた、1955年に開かれたアメリカ・イギリス・フランス・ソ連４カ国の首脳会談を何と呼ぶか？", 
+                a: "ジュネーヴ4巨頭会議",
+                explanation: "1955年に開かれたアメリカ・イギリス・フランス・ソ連４カ国の首脳会議"
+            },
+                             { 
+                q: "1955年にソ連はユーゴスラヴィアと和解したが、同じ年にソ連が国交を結んだ西側の国家はどこか？", 
+                a: "西ドイツ",
+                explanation: "1955年ソ連はユーゴスラヴィアと和解し、同じ年西ドイツと国交を結んだ"
+            },
+                             { 
+                q: "1959年、平和共存政策をとるフルシチョフが、ソ連指導者として初めて訪問した国家はどこか？", 
+                a: "アメリカ合衆国",
+                explanation: "平和共存政策をとるフルシチョフがソ連指導者として初めて訪問した国家"
+            },
+                             { 
+                q: "1956年6月、ポズナニで生活改善と自由化を要求する運動が起こった東ヨーロッパの国はどこか？", 
+                a: "ポーランド",
+                explanation: "ポズナニで起こった生活改善と自由化を要求する運動が起こった国"
+            },
+                             { 
+                q: "ポーランドでポズナニ暴動を収拾し、党第一書記となった人物は誰か？", 
+                a: "ゴムウカ",
+                explanation: "ゴムウカ（ゴムルカ）"
+            },
+                             { 
+                q: "1956年10月、反ソ・民主化要求の運動が広まり、ソ連軍の全面介入をまねいた東ヨーロッパの国はどこか？", 
+                a: "ハンガリー",
+                explanation: "反ソ・民主化要求の運動が広まり、ソ連の全面軍事介入をまねいた国"
+            },
+                             { 
+                q: "ハンガリー事件で失脚し処刑された、この国の首相は誰か？", 
+                a: "ナジ",
+                explanation: "ナジ（＝イムレ）"
+            },
+                             { 
+                q: "1961年、東ドイツ政府が亡命者の増大を防ぐため、西ベルリンの周囲に築いたものは何か？", 
+                a: "ベルリンの壁",
+                explanation: "東ドイツ政府が亡命者増大を防ぐため西ベルリンの周囲に築いた"
+            },
+                             { 
+                q: "大陸をまたぐ、長い射程距離の核弾頭による攻撃を可能にした兵器は何か？", 
+                a: "大陸間弾道ミサイル",
+                explanation: "大陸間弾道ミサイル（ICBM）、ICBM：intercontinental ballistic missile"
+            },
+                             { 
+                q: "1957年、ソ連が打ち上げに成功した人工衛星の名称は何か？", 
+                a: "スプートニク1号",
+                explanation: "ソ連が打ち上げに成功した人工衛星の名称"
+            },
+                             { 
+                q: "1961年、ソ連のガガーリンがボストーク1号に搭乗して史上初めて達成した出来事は何か？", 
+                a: "有人宇宙飛行",
+                explanation: "ソ連のガガーリンが史上初めて達成した出来事"
+            }
+                 
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        const questionEl = document.getElementById('question');
+        const answerEl = document.getElementById('answer');
+        const resultEl = document.getElementById('result');
+        const checkBtn = document.getElementById('checkBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const scoreEl = document.getElementById('score');
+        const totalEl = document.getElementById('total');
+        const progressEl = document.getElementById('progress');
+        const quizArea = document.getElementById('quiz-area');
+        const finishScreen = document.getElementById('finishScreen');
+        const finalScoreEl = document.getElementById('finalScore');
+        const restartBtn = document.getElementById('restartBtn');
+
+        function loadQuestion() {
+            questionEl.textContent = questions[currentQuestion].q;
+            answerEl.value = '';
+            resultEl.classList.add('hidden');
+            resultEl.classList.remove('correct', 'incorrect');
+            checkBtn.style.display = 'block';
+            nextBtn.style.display = 'none';
+            answered = false;
+            progressEl.textContent = `問題 ${currentQuestion + 1} / ${questions.length}`;
+            totalEl.textContent = currentQuestion;
+            answerEl.focus();
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            
+            const userAnswer = answerEl.value.trim();
+            const correctAnswer = questions[currentQuestion].a;
+
+            answered = true;
+
+            resultEl.classList.remove('hidden');
+
+            if (userAnswer === correctAnswer) {
+                resultEl.innerHTML = '🎉 正解です！';
+                resultEl.classList.remove('incorrect');
+                resultEl.classList.add('correct');
+                score++;
+                scoreEl.textContent = score;
+            } else {
+                resultEl.innerHTML = `
+                    ❌ 不正解です
+                    <div class="correct-answer">正解: ${correctAnswer}</div>
+                    <div class="explanation">
+                        <div class="explanation-title">📖 解説</div>
+                        ${questions[currentQuestion].explanation}
+                    </div>
+                `;
+                resultEl.classList.remove('correct');
+                resultEl.classList.add('incorrect');
+            }
+
+            totalEl.textContent = currentQuestion + 1;
+            checkBtn.style.display = 'none';
+            nextBtn.style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showFinishScreen();
+            }
+        }
+
+        function showFinishScreen() {
+            quizArea.style.display = 'none';
+            finishScreen.style.display = 'block';
+            finalScoreEl.textContent = `${score} / ${questions.length}`;
+        }
+
+        function restart() {
+            currentQuestion = 0;
+            score = 0;
+            scoreEl.textContent = 0;
+            quizArea.style.display = 'block';
+            finishScreen.style.display = 'none';
+            loadQuestion();
+        }
+
+        checkBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', restart);
+
+        answerEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (!answered) {
+                    checkAnswer();
+                } else {
+                    nextQuestion();
+                }
+            }
+        });
+
+        loadQuestion();
+    </script>
+</body>
+</html>
