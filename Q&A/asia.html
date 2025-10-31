@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+         <meta name="robots" content="noindex">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世界史一問一答</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .progress {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .question-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question-text {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .check-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .check-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .next-btn {
+            background: #48bb78;
+            color: white;
+            display: none;
+        }
+
+        .next-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .result.correct {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .result.incorrect {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .result.hidden {
+            display: none;
+        }
+
+        .correct-answer {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            border-left: 3px solid #667eea;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .score {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .score-text {
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .finish-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .finish-screen h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        .restart-btn {
+            background: #667eea;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .restart-btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 世界史一問一答</h1>
+        <div class="progress" id="progress">問題 1 / 10</div>
+
+        <div id="quiz-area">
+            <div class="question-card">
+                <div class="question-text" id="question"></div>
+                <input type="text" class="answer-input" id="answer" placeholder="答えを入力してください">
+            </div>
+
+            <div class="result" id="result"></div>
+
+            <div class="buttons">
+                <button class="check-btn" id="checkBtn">答え合わせ</button>
+                <button class="next-btn" id="nextBtn">次の問題</button>
+            </div>
+
+            <div class="score">
+                <div class="score-text">正解数: <span id="score">0</span> / <span id="total">0</span></div>
+            </div>
+        </div>
+
+        <div class="finish-screen" id="finishScreen">
+            <h2>🎉 お疲れ様でした！</h2>
+            <div class="score-text">最終スコア: <span id="finalScore"></span></div>
+            <button class="restart-btn" id="restartBtn">もう一度挑戦</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { 
+                q: "第二次世界大戦での日本の占拠・降伏を経て、1946年にアメリカから独立した東南アジアの国はどこか？", 
+                a: "フィリピン共和国",
+                explanation: "1946年アメリカから独立"
+            },
+            { 
+                q: "1945年8月に独立を宣言したがオランダが認めず、4年にわたる武力闘争ののちに独立が承認された国はどこか？", 
+                a: "インドネシア共和国",
+                explanation: "オランダが認めず、武力闘争ののち独立"
+            },
+            { 
+                q: "インドネシア共和国の初代大統領となった独立の指導者は誰か？", 
+                a: "スカルノ",
+                explanation: "インドネシア共和国初代大統領"
+            },
+            { 
+                q: "1941年に独立を目指してインドシナ共産党を中心に諸党派が結集した組織は何か？", 
+                a: "ベトナム独立同盟会",
+                explanation: "ベトナム独立同盟会（ベトミン）"
+            },
+            { 
+                q: "1945年9月、ハノイで独立宣言が出されて成立したベトナムの国名は何か？", 
+                a: "ベトナム民主共和国",
+                explanation: "1945年9月ハノイで独立宣言"
+            },
+                        { 
+                q: "ベトナム民主共和国の初代大統領となった独立の指導者は誰か？", 
+                a: "ホー・チ・ミン",
+                explanation: "ベトナム民主共和国初代大統領"
+            },
+            { 
+                q: "ベトナム民主共和国と植民地支配の回復を目指すフランスとの間で、1946年より始まった戦争は何か？", 
+                a: "インドシナ戦争",
+                explanation: "1946年に始まったベトナム民主共和国とフランスの戦争"
+            },
+            { 
+                q: "1949年、フランスの後援でベトナム南部に成立した国は何か？", 
+                a: "ベトナム国",
+                explanation: "1949年フランスの後援で成立した国"
+            },
+            { 
+                q: "ベトナム国の元首とされた、阮超最後の王は誰か？", 
+                a: "バオダイ",
+                explanation: "ベトナム国元首、阮朝最後の王"
+            },
+            { 
+                q: "第四共和政下のフランスで結成された、旧植民地や旧保護国などに平等な権利を与えて１つの統合体にまとめたものは何か？", 
+                a: "フランス連合",
+                explanation: "フランスで結成、旧植民地や旧保護国などに平等な権利を与えた統合体"
+            },
+            { 
+                q: "1954年5月、休戦会議の最中にフランス軍が大敗したベトナム北西部の町はどこか？", 
+                a: "ディエンビエンフー",
+                explanation: "1954年5月、フランス軍が大敗したベトナム北西部の町"
+            },
+            { 
+                q: "1954年、朝鮮統一とインドシナ戦争の休戦を話し合うための会議はどこで開かれたか？", 
+                a: "ジュネーヴ",
+                explanation: "朝鮮統一とインドシナ戦争の休戦を話し合う会議"
+            },
+                 { 
+                q: "1954年7月に調印され、暫定軍事境界線と南北統一選挙の実施を定めた、インドシナ戦争の休戦協定は何か？", 
+                a: "ジュネーヴ休戦協定",
+                explanation: "1954年7月調印、全逓軍事境界線と南北朝統一選挙の実施を定めた、インドシナ戦争の休戦協定"
+                 },
+                  { 
+                q: "ジュネーヴ休戦協定による暫定軍事境界線は北緯何度線か？", 
+                a: "北緯17度緯",
+                explanation: "ジュネーヴ休戦協定による暫定軍事境界線"
+            },
+            { 
+                q: "1955年、ジュネーヴ休戦協定を無視し、アメリカの支援を受けてベトナム南部に樹立された国は何か？", 
+                a: "ベトナム共和国",
+                explanation: "1955年休戦協定を無視し、アメリカ支援で樹立"
+            },
+            { 
+                q: "バオダイを追放してベトナム共和国を建て、アメリカの援助で独裁政治を行なった初代大統領は誰か？", 
+                a: "ゴ・ディン・ジエム",
+                explanation: "ベトナム共和国を建て、独裁政治を行なった初代大統領"
+            },
+            { 
+                q: "1953年、フランスから独立したインドシナの国はどこか？", 
+                a: "カンボジア",
+                explanation: "1953年フランスから独立"
+            },
+            { 
+                q: "独立後、王政社会主義を唱えた、カンボジアの国王・元首は誰か？", 
+                a: "シハヌーク",
+                explanation: "王政社会主義を唱えたカンボジアの国王・元首"
+            },
+            { 
+                q: "1946年に王国として復活し、54年のジュネーヴ休戦協定で完全独立を承認されたインドシナの国はどこか？", 
+                a: "ラオス",
+                explanation: "1954年ジュネーヴ休戦協定で完全独立を承認"
+            },
+            { 
+                q: "1948年に連邦共和国として、イギリス連邦を脱して完全に独立した東南アジアの国はどこか？", 
+                a: "ビルマ",
+                explanation: "1948年にイギリス連邦を脱して完全に独立した東南アジアの国"
+            },
+            { 
+                q: "1957年、イギリス連邦の自治領として独立した東南アジアの国はどこか？", 
+                a: "マラヤ連邦",
+                explanation: "1957年、イギリス連邦の自治領として独立した東南アジアの国"
+            },
+            { 
+                q: "1947年7月、イギリスのアトリー内閣のもとで成立したインド地域の独立に関する法は何か？", 
+                a: "インド独立法",
+                explanation: "1947年7月、イギリスで成立したインド地域の独立に関する法"
+            },
+            { 
+                q: "1947年に独立したインドの国名は何か？", 
+                a: "インド連邦",
+                explanation: "1947年に独立したインドの国名"
+            },
+            { 
+                q: "自治領として独立したインド連邦の初代首相は誰か？", 
+                a: "ネルー",
+                explanation: "独立したインド連邦の初代首相"
+            },
+                 {
+                    q: "イスラーム教徒との融和を唱えていたため、1948年、ヒンドゥー教急進派に暗殺された人物は誰か？", 
+                a: "ガンディー",
+                explanation: "イスラーム教徒との融和を唱えていたため、1948年に暗殺された"
+            },
+                 { 
+                q: "反カースト運動に貢献し、独立後インド憲法起草委員長となった宗教家・政治家は誰か？", 
+                a: "アンベードカル",
+                explanation: "半カースト運動に貢献、独立後インド憲法起草委員長"
+            },
+                 { 
+                q: "1950年、新憲法の発布に基づきインドの国名は何となったか？", 
+                a: "インド共和国",
+                explanation: "1950年、新憲法に基づいたインドの国名"   
+            },
+                 {
+                    q: "1947年にインドと分離して独立した国はどこか？", 
+                a: "パキスタン",
+                explanation: "1947年インドと分離、独立した国"
+            },
+                 {
+                          q: "1948年に独立し、72年にスリランカと改称した国はどこか？", 
+                a: "セイロン",
+                explanation: "1948年独立、1972年にスリランカに改称"
+            },
+                 {
+                          q: "ヨーロッパ人による東方世界の地域区分の１つで、現在では、北アフリカを含むアラブ諸国とトルコ・イラン・アフガニスタンを合わせた地域を指す名称は何か？", 
+                a: "中東",
+                explanation: "北アフリカを含むアラブ諸国とトルコ・イラン・アフガニスタンを合わせた地域を指す名称"
+            },
+                 { 
+                q: "1945年3月、アラブ諸国民の主権擁護と相互協力を目的に７カ国が結成した地域機構は何か？", 
+                a: "アラブ連合",
+                explanation: "アラブ（諸国）連合"
+            },
+                 { 
+                q: "1947年11月、国連総会で決議された、イギリスの委任統治終了後のパレスチナに関する法案は何か？", 
+                a: "パレスチナ分割案",
+                explanation: "1947年11月、イギリスの委任統治終了後のパレスチナに関する法案"
+            },
+                 { 
+                q: "1948年5月、パレスチナ分割案を受けて、ユダヤ人が建てた国はどこか？", 
+                a: "イスラエル",
+                explanation: "パレスチナ分割案を受けてユダヤ人が建てた国"
+            },
+                 { 
+                q: "イスラエルの建国が契機となって、1948〜49年に起こった戦争は何か？", 
+                a: "パレスチナ戦争",
+                explanation: "パレスチナ戦争（第１次中東戦争）"
+            },
+                 { 
+                q: "パレスチナ戦争の結果、パレスチナを追われたアラブ系の人々を何と呼ぶか？", 
+                a: "パレスチナ難民",
+                explanation: "パレスチナ戦争の結果、パレスチナを追われたアラブ系の人々"
+            },
+                 { 
+                q: "1951年、イランで急進的民族主義者が政権を握って、出した宣言は何か？", 
+                a: "石油国有化",
+                explanation: "イランで急進的民族主義者が握った政権で出された宣言"
+            },
+                 { 
+                q: "石油国有化を強行したイランの首相は誰か？", 
+                a: "モサッデグ",
+                explanation: "モサッデグ（モサデグ）"
+            },
+                 { 
+                q: "1953年、アメリカの支援によるクーデタで実権を奪い返したイラン国王は誰か？", 
+                a: "パフレヴィー2世",
+                explanation: "1953年、アメリカ支援によるクーデタで実権を奪い返したイラン国王"
+            }
+                 
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        const questionEl = document.getElementById('question');
+        const answerEl = document.getElementById('answer');
+        const resultEl = document.getElementById('result');
+        const checkBtn = document.getElementById('checkBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const scoreEl = document.getElementById('score');
+        const totalEl = document.getElementById('total');
+        const progressEl = document.getElementById('progress');
+        const quizArea = document.getElementById('quiz-area');
+        const finishScreen = document.getElementById('finishScreen');
+        const finalScoreEl = document.getElementById('finalScore');
+        const restartBtn = document.getElementById('restartBtn');
+
+        function loadQuestion() {
+            questionEl.textContent = questions[currentQuestion].q;
+            answerEl.value = '';
+            resultEl.classList.add('hidden');
+            resultEl.classList.remove('correct', 'incorrect');
+            checkBtn.style.display = 'block';
+            nextBtn.style.display = 'none';
+            answered = false;
+            progressEl.textContent = `問題 ${currentQuestion + 1} / ${questions.length}`;
+            totalEl.textContent = currentQuestion;
+            answerEl.focus();
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            
+            const userAnswer = answerEl.value.trim();
+            const correctAnswer = questions[currentQuestion].a;
+
+            answered = true;
+
+            resultEl.classList.remove('hidden');
+
+            if (userAnswer === correctAnswer) {
+                resultEl.innerHTML = '🎉 正解です！';
+                resultEl.classList.remove('incorrect');
+                resultEl.classList.add('correct');
+                score++;
+                scoreEl.textContent = score;
+            } else {
+                resultEl.innerHTML = `
+                    ❌ 不正解です
+                    <div class="correct-answer">正解: ${correctAnswer}</div>
+                    <div class="explanation">
+                        <div class="explanation-title">📖 解説</div>
+                        ${questions[currentQuestion].explanation}
+                    </div>
+                `;
+                resultEl.classList.remove('correct');
+                resultEl.classList.add('incorrect');
+            }
+
+            totalEl.textContent = currentQuestion + 1;
+            checkBtn.style.display = 'none';
+            nextBtn.style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showFinishScreen();
+            }
+        }
+
+        function showFinishScreen() {
+            quizArea.style.display = 'none';
+            finishScreen.style.display = 'block';
+            finalScoreEl.textContent = `${score} / ${questions.length}`;
+        }
+
+        function restart() {
+            currentQuestion = 0;
+            score = 0;
+            scoreEl.textContent = 0;
+            quizArea.style.display = 'block';
+            finishScreen.style.display = 'none';
+            loadQuestion();
+        }
+
+        checkBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', restart);
+
+        answerEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (!answered) {
+                    checkAnswer();
+                } else {
+                    nextQuestion();
+                }
+            }
+        });
+
+        loadQuestion();
+    </script>
+</body>
+</html>
